@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 dotenv.config();
 const port = process.env.PORT || 8000;
 const uri = process.env.MONGODB_URI;
@@ -25,8 +25,19 @@ async function run() {
     const db = client.db("study-nook");
     const roomsCollection = db.collection("rooms");
 
+    // Get all rooms
     app.get("/rooms", async (req, res) => {
       const result = await roomsCollection.find().toArray();
+      res.json(result);
+    });
+
+    // Get only one room by ID
+    app.get("/rooms/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await roomsCollection.findOne(query);
       res.json(result);
     });
 
