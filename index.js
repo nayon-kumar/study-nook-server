@@ -31,6 +31,13 @@ async function run() {
       res.json(result);
     });
 
+    // Add room
+    app.post("/rooms", async (req, res) => {
+      const newRoomData = req.body;
+      const result = await roomsCollection.insertOne(newRoomData);
+      res.json(result);
+    });
+
     // Get only one room by ID
     app.get("/rooms/:id", async (req, res) => {
       const id = req.params.id;
