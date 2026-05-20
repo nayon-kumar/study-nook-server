@@ -53,10 +53,27 @@ async function run() {
     app.patch("/rooms/:id", async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
+
+      // 1. Update room
       const result = await roomsCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updatedData },
       );
+
+      // 2. Update only display fields in bookings
+      const bookingUpdate = {};
+
+      if (updatedData.name) bookingUpdate.roomName = updatedData.name;
+      if (updatedData.image) bookingUpdate.roomImage = updatedData.image;
+
+      // Only update bookings if needed fields exist
+      if (Object.keys(bookingUpdate).length > 0) {
+        await bookingsCollection.updateMany(
+          { roomID: id },
+          { $set: bookingUpdate },
+        );
+      }
+
       res.json(result);
     });
 
