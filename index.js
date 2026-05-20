@@ -60,6 +60,13 @@ async function run() {
     });
 
     // Delete room
+    app.delete("/rooms/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await roomsCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.json(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
