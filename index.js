@@ -54,13 +54,13 @@ async function run() {
       const id = req.params.id;
       const updatedData = req.body;
 
-      // 1. Update room
+      // Update room
       const result = await roomsCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updatedData },
       );
 
-      // 2. Update only display fields in bookings
+      // Update only display fields in bookings
       const bookingUpdate = {};
 
       if (updatedData.name) bookingUpdate.roomName = updatedData.name;
@@ -154,6 +154,22 @@ async function run() {
         userId: id,
       };
       const result = await bookingsCollection.find(query).toArray();
+      res.json(result);
+    });
+
+    // Cancel booking
+    app.patch("/bookings/cancel/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const result = await bookingsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            status: "cancelled",
+          },
+        },
+      );
+
       res.json(result);
     });
 
