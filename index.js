@@ -87,7 +87,7 @@ async function run() {
         const newStart = bookingData.startTime;
         const newEnd = bookingData.endTime;
 
-        // 🔥 CHECK CONFLICT
+        // CHECK CONFLICT
         const conflict = await bookingsCollection.findOne({
           roomID: bookingData.roomID,
           bookingDate: bookingData.bookingDate,
@@ -106,7 +106,7 @@ async function run() {
           });
         }
 
-        // ✅ Insert booking
+        // Insert booking
         const result = await bookingsCollection.insertOne({
           ...bookingData,
           createdAt: new Date(),
@@ -128,6 +128,16 @@ async function run() {
           message: error.message,
         });
       }
+    });
+
+    // Get my bookings by userID
+    app.get("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        userId: id,
+      };
+      const result = await bookingsCollection.find(query).toArray();
+      res.json(result);
     });
 
     await client.db("admin").command({ ping: 1 });
