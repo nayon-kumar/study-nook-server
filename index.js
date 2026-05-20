@@ -24,6 +24,7 @@ async function run() {
 
     const db = client.db("study-nook");
     const roomsCollection = db.collection("rooms");
+    const bookingsCollection = db.collection("bookings");
 
     // Get all rooms
     app.get("/rooms", async (req, res) => {
@@ -76,6 +77,57 @@ async function run() {
       };
       const result = await roomsCollection.find(query).toArray();
       res.json(result);
+    });
+
+    // Bookings
+    app.post("/bookings", async (req, res) => {
+      try {
+        const bookingData = req.body;
+
+        const newStart = bookingData.startTime;
+        const newEnd = bookingData.endTime;
+
+        // 🔥 CHECK CONFLICT
+        const conflict = await bookingsCollection.findOne({
+          roomID: bookingData.roomID,
+          bookingDate: bookingData.bookingDate,
+          $expr: {
+            $and: [
+              { $lt: [newStart, { $toInt: "$endTime" }] },
+              { $gt: [newEnd, { $toInt: "$startTime" }] },
+            ],
+          },
+        });
+
+        if (conflict) {
+          return res.status(409).json({
+            success: false,
+            message: "This time slot is already booked",
+          });
+        }
+
+        // ✅ Insert booking
+        const result = await bookingsCollection.insertOne({
+          ...bookingData,
+          createdAt: new Date(),
+        });
+
+        // update room count
+        await roomsCollection.updateOne(
+          { _id: new ObjectId(bookingData.roomID) },
+          { $inc: { bookings: 1 } },
+        );
+
+        res.json({
+          success: true,
+          insertedId: result.insertedId,
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: error.message,
+        });
+      }
     });
 
     await client.db("admin").command({ ping: 1 });
