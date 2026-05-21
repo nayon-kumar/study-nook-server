@@ -47,9 +47,22 @@ async function run() {
     const roomsCollection = db.collection("rooms");
     const bookingsCollection = db.collection("bookings");
 
-    // Get all rooms
+    // Get all rooms and search
     app.get("/rooms", async (req, res) => {
-      const result = await roomsCollection.find().toArray();
+      const { search } = req.query;
+
+      let query = {};
+
+      if (search) {
+        query = {
+          name: {
+            $regex: search,
+            $options: "i", // case-insensitive
+          },
+        };
+      }
+
+      const result = await roomsCollection.find(query).toArray();
       res.json(result);
     });
 
