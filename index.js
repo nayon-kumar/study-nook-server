@@ -47,19 +47,40 @@ async function run() {
     const roomsCollection = db.collection("rooms");
     const bookingsCollection = db.collection("bookings");
 
-    // Get all rooms and search
+    // Get all rooms with search and filter
     app.get("/rooms", async (req, res) => {
-      const { search } = req.query;
+      const { search, minPrice, maxPrice, amenities } = req.query;
 
       let query = {};
 
+      // Search by name
       if (search) {
-        query = {
-          name: {
-            $regex: search,
-            $options: "i", // case-insensitive
-          },
+        query.name = {
+          $regex: search,
+          $options: "i",
         };
+      }
+
+      // Price filter
+      if (minPrice || maxPrice) {
+        query.price = {};
+
+        if (minPrice) query.price.$gte = Number(minPrice);
+        if (maxPrice) query.price.$lte = Number(maxPrice);
+      }
+
+      // Amenities filter (multi-select)
+      if (amenities) {
+        const amenityArray = amenities
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean);
+
+        if (amenityArray.length > 0) {
+          query.amenities = {
+            $all: amenityArray,
+          };
+        }
       }
 
       const result = await roomsCollection.find(query).toArray();
