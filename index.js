@@ -108,7 +108,7 @@ async function run() {
     });
 
     // Get my listings by userID
-    app.get("/my-listings/:id", async (req, res) => {
+    app.get("/my-listings/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = {
         userID: id,
@@ -169,7 +169,7 @@ async function run() {
     });
 
     // Get my bookings by userID
-    app.get("/bookings/:id", async (req, res) => {
+    app.get("/bookings/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = {
         userId: id,
