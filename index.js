@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
   },
 });
 
-const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+const JWKS = createRemoteJWKSet(new URL(process.env.JWKS_URL));
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -71,7 +71,7 @@ async function run() {
     });
 
     // Edit room details
-    app.patch("/rooms/:id", async (req, res) => {
+    app.patch("/rooms/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
 
@@ -99,7 +99,7 @@ async function run() {
     });
 
     // Delete room
-    app.delete("/rooms/:id", async (req, res) => {
+    app.delete("/rooms/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await roomsCollection.deleteOne({
         _id: new ObjectId(id),
