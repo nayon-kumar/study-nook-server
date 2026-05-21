@@ -53,6 +53,17 @@ async function run() {
       res.json(result);
     });
 
+    // Get latest 6 room
+    app.get("/rooms/latest", async (req, res) => {
+      const result = await roomsCollection
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .toArray();
+
+      res.json(result);
+    });
+
     // Add room
     app.post("/rooms", verifyToken, async (req, res) => {
       const newRoomData = req.body;
