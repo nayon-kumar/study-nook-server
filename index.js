@@ -118,7 +118,7 @@ async function run() {
     });
 
     // Bookings
-    app.post("/bookings", async (req, res) => {
+    app.post("/bookings", verifyToken, async (req, res) => {
       try {
         const bookingData = req.body;
 
@@ -179,7 +179,7 @@ async function run() {
     });
 
     // Cancel booking
-    app.patch("/bookings/cancel/:id", async (req, res) => {
+    app.patch("/bookings/cancel/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
       const result = await bookingsCollection.updateOne(
